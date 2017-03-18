@@ -1,26 +1,61 @@
 import math
+import glob
 import cv2, time
 import numpy as np
 import dlib
-import skimage
-import skimage.transform
-
+from numpy import array, dot, mean, std, empty, argsort ,size ,shape ,transpose
+from numpy.linalg import eigh, solve
 
 face_detector = dlib.get_frontal_face_detector()
 face_predictor = dlib.shape_predictor('./models/shape_predictor_68_face_landmarks.dat')
 
 
+def generate_database():
+    image_list = []
+    for filename in glob.glob('/home/chenjun/Downloads/GenderClassification/jpg/*.jpg'):
+        im = cv2.imread(filename)
+        img = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY) 
+        image_list.append(img)
+    
+        # cv2.imwrite(filename+"_bw",img)
+    return image_list
 
-def find_landmark(img):
-    #resize the img to 0.1 for face detection to speed up for real time
-    scale_factor = 8
-    resized_img = cv2.resize(img, (0,0), fx=1.0/scale_factor, fy=1.0/scale_factor);
-    rect = face_detector(resized_img, 1)
-    if len(rect) > 0:
-    	face_area = dlib.rectangle(rect[0].left()*scale_factor, rect[0].top()*scale_factor, \
-            rect[0].right()*scale_factor, rect[0].bottom()*scale_factor)
-    	shape = face_predictor(img, face_area)
-    	return shape
-    else:
-        print('face not find')
-	return None
+ 
+
+def detect_face(img):
+    face_mat = []
+    for i in range(0,len(img)):
+        rect = face_detector(img[i], 1)
+        if len(rect) > 0:
+           face_area = dlib.rectangle(rect[0].left(),rect[0].top(),rect[0].right(), rect[0].bottom())
+           shape = face_predictor(img[i], face_area)
+           face_mat.append(shape)
+           # cv2.imshow('image',face_area)
+           # cv2.waitKey(0)
+        else:
+            print('face not find')
+    return face_mat
+
+
+def pca(image, k, m):
+    mean_mat = image - m
+    C = np.dot(mean_mat.transpose(),mean_mat)
+    E, V = eigh(C)                          #E eigen values and V is eigen vectors  
+    key = argsort(E)[::-1][:k]                  #key will have indices of array
+  
+    E, V = E[key], V[:, key]
+    V = V.T                                   #eigen matrix ka transpose bhj rha hu i.e. k*48
+    eigenface = V*m
+    return eigenface 
+
+
+
+
+
+image_list = generate_database()
+images = detect_face(image_list)
+m = mean(images,axis = 0)
+print m
+# k = 50
+# eigenface = pca(images,k,m)
+# np.save("eigenface.txt",eigenface)
