@@ -12,13 +12,18 @@ face_predictor = dlib.shape_predictor('./models/shape_predictor_68_face_landmark
 
 def generate_database():
     image_list = []
-    for filename in glob.glob('/home/chenjun/Downloads/GenderClassification/jpg/*.jpg'):
+    label_list = []
+    for filename in glob.glob('./jpg/*.jpg'):
         im = cv2.imread(filename)
         img = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY) 
         image_list.append(img)
+        if (filename.find('f')):
+            label_list.append(-1)
+        else:
+            label_list.append(1)
     
         # cv2.imwrite(filename+"_bw",img)
-    return image_list
+    return image_list, label_list
 
  
 
@@ -50,11 +55,9 @@ def pca(image, k, m):
 
 
 
-
-
-image_list = generate_database()
-images = detect_face(image_list)
-m = mean(images,axis = 0)
+[image, label] = generate_database()
+data = detect_face(image)
+m = mean(data, axis = 0)
 print m
 # k = 50
 # eigenface = pca(images,k,m)
