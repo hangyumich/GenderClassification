@@ -13,12 +13,19 @@ face_predictor = dlib.shape_predictor('./models/shape_predictor_68_face_landmark
 def generate_database():
     image_list = []
     label_list = []
+    count = 0
     for filename in glob.glob('./jpg/*.jpg'):
+
         im = cv2.imread(filename)
-        img = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY) 
+        im = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY) 
+        img = cv2.resize(im, (0,0), fx=1/10.0, fy=1/10.0)
         h,w = img.shape[:2]
         img_new = np.reshape(img, h*w)
         image_list.append(img_new)
+        count = count + 1
+
+        if (count == 100):
+            break
         if (filename.find("fn") != -1):
             label_list.append(-1)
         else:
@@ -58,8 +65,11 @@ def pca(image, k, m):
 
 
 [image, label] = generate_database()
+np.savetxt('data.txt', image)
+np.savetxt('label.txt', label)
 #data = detect_face(image)
 m = mean(image, axis = 0)
-k = 50
+k = 80
 eigenface = pca(image,k,m)
-#np.save("eigenface.txt",eigenface)
+np.savetxt("eigenface.txt",eigenface)
+
