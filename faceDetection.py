@@ -17,7 +17,7 @@ def generate_database():
         im = cv2.imread(filename)
         img = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY) 
         image_list.append(img)
-        if (filename.find('f')):
+        if (filename.find("fn") != -1):
             label_list.append(-1)
         else:
             label_list.append(1)
@@ -56,9 +56,10 @@ def pca(image, k, m):
 
 
 [image, label] = generate_database()
-data = detect_face(image)
-m = mean(data, axis = 0)
-print m
+print label
+#data = detect_face(image)
+#m = mean(data, axis = 0)
+#print m
 # k = 50
 # eigenface = pca(images,k,m)
 # np.save("eigenface.txt",eigenface)
